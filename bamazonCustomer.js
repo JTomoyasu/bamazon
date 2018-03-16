@@ -28,8 +28,8 @@ function initial() {
                 name: "productBought",
                 message: "Please input the id of the product you'd like to buy:",
                 validate: function (value) {
-                    if (isNaN(value) || value > res.length) {
-                        console.log("We don't have a product that matches that id. Please choose another.");
+                    if (isNaN(value) || value > res.length || value < 1 || !Number.isInteger(parseFloat(value))) {
+                        console.log("\nWe don't have a product that matches that id. Please choose another.");
                         return false;
                     }
                     return true;
@@ -40,34 +40,29 @@ function initial() {
                 name: "productQuantity",
                 message: "Please specify the amount you'd like to buy:",
                 validate: function (value) {
-                    if (isNaN(value)) {
-                        console.log("Please input a number.");
+                    if (isNaN(value) || value < 1 || !Number.isInteger(parseFloat(value))) {
+                        console.log("\nPlease input a number.");
                         return false;
                     }
                     return true;
                 }
             }
         ]).then(function (ans) {
-            for (j = 0; j < res.length; j++) {
-                if (ans.productBought == res[j].item_id) {
-                    if (ans.productQuantity > res[j].stock_quantity) {
-                        console.log("We don't have enough of that. Please choose something else.");
+            if (ans.productQuantity > res[ans.productBought-1].stock_quantity) {
+                console.log("\nWe don't have enough of that. Please choose something else.");
+                initial();
+            }
+            else {
+                var q2 = "UPDATE products SET ? WHERE ?";
+                var newQuant = res[ans.productBought-1].stock_quantity - ans.productQuantity;
+                var totalPrice = ans.productQuantity * res[ans.productBought-1].price;
+                connection.query(q2,
+                    [{ stock_quantity: newQuant },
+                    { item_id: res[ans.productBought-1].item_id }],
+                    function (error, response) {
+                        console.log("\nSuccess! " + "You spent: " + totalPrice + " dollars" + " Thank you for your purchase.");
                         initial();
-                    }
-                    else {
-                        var q2 = "UPDATE products SET ? WHERE ?";
-                        var newQuant = res[j].stock_quantity - ans.productQuantity;
-                        console.log(newQuant);
-                        var totalPrice = ans.productQuantity * res[j].price;
-                        connection.query(q2,
-                            [{ stock_quantity: newQuant },
-                            { item_id: res[j].item_id }],
-                            function (error, response) {
-                                console.log("Success! " + "You spent: " + totalPrice + " dollars" + " Thank you for your purchase.");
-                                initial();
-                            });
-                    }
-                }
+                    });
             }
         })
     });
