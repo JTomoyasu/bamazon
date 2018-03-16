@@ -46,7 +46,7 @@ function listProducts() {
     var quary = "SELECT item_id, product_name, price,stock_quantity FROM products";
     connection.query(quary, function (err, res) {
         for (i = 0; i < res.length; i++) {
-            console.log("Item ID: " + res[i].item_id + " || Product: " + res[i].product_name + " || Price: " + res[i].price + " || Quantity: " + res[i].stock_quantity);
+            console.log("\nItem ID: " + res[i].item_id + " || Product: " + res[i].product_name + " || Price: " + res[i].price + " || Quantity: " + res[i].stock_quantity+"\n");
         }
     });
     initial();
@@ -56,7 +56,7 @@ function listLowInventory() {
     connection.query(quary, function (err, res) {
         for (i = 0; i < res.length; i++) {
             if (res[i].stock_quantity < 5) {
-                console.log("Item ID: " + res[i].item_id + " || Product: " + res[i].product_name + " || Price: " + res[i].price + " || Quantity: " + res[i].stock_quantity);
+                console.log("\nItem ID: " + res[i].item_id + " || Product: " + res[i].product_name + " || Price: " + res[i].price + " || Quantity: " + res[i].stock_quantity+"\n");
             }
         }
     });
@@ -92,7 +92,7 @@ function addInventory() {
             }
         ]).then(function (ans) {
             var q2 = "UPDATE products SET ? WHERE ?";
-            var newQuant = res[ans.productID - 1].stock_quantity + ans.amount;
+            var newQuant = parseFloat(res[ans.productID - 1].stock_quantity) + parseFloat(ans.amount);
             connection.query(q2,
                 [{ stock_quantity: newQuant },
                 { item_id: res[ans.productID - 1].item_id }],
@@ -156,6 +156,7 @@ function addProduct() {
     ]).then(function(ans){
         connection.query("INSERT INTO products(product_name,department_name,price,stock_quantity)VALUES (?,?,?,?)",[ans.productName,ans.productDepartment,ans.productPrice,ans.productQuantity],function(err,resp){
             console.log("\nSuccess! Product added to stock.")
+            initial();
         })
     });
 }
